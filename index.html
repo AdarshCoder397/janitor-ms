@@ -276,7 +276,7 @@
   <div class="setup-banner" id="setup-banner">
     <strong>⚙ One-time setup — connect to Google Sheets</strong>
     Paste your Google Apps Script Web App URL below to enable syncing.
-    Deploy the <code>google_apps_script.js</code> file as a Web App (Execute as: Me, Access: Anyone).
+    Deploy the <code>Code.gs</code> file as a Web App (Execute as: Me, Access: Anyone).
     <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" />
     <button onclick="saveScriptUrl()">Save & connect</button>
   </div>
@@ -394,20 +394,17 @@ const ZONES = [
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-let state = {}; // { zoneId: [true/false, ...] }
+let state = {};
 let SCRIPT_URL = localStorage.getItem('janitor_script_url') || '';
 let syncTimer = null;
 let lastSyncedDate = '';
 
 function getTodayKey() {
-  const d = new Date();
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD
+  return new Date().toISOString().split('T')[0];
 }
-
 function getDayName() {
   return new Date().toLocaleDateString('en-US', { weekday: 'long' });
 }
-
 function getStateKey() { return 'janitor_state_' + getTodayKey(); }
 
 function loadState() {
@@ -549,62 +546,60 @@ function updateCountdown() {
   document.getElementById('countdown').textContent =
     `Resets in ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 
-  // Check if date changed → reset
   const today = getTodayKey();
-  if (lastSyncedDate && lastSyncedDate !== today) {
-    location.reload();
-  }
+  if (lastSyncedDate && lastSyncedDate !== today) location.reload();
   lastSyncedDate = today;
 }
 
 // ═══════════════════════════════════════════════
-// GOOGLE SHEETS SYNC
+// GOOGLE SHEETS SYNC — GET-based (no CORS)
 // ═══════════════════════════════════════════════
 function setSyncStatus(status, msg) {
   const dot = document.getElementById('sync-dot');
   const txt = document.getElementById('sync-text');
   dot.className = 'sync-dot';
   if (status === 'syncing') dot.classList.add('syncing');
-  if (status === 'error') dot.classList.add('error');
+  if (status === 'error')   dot.classList.add('error');
   txt.textContent = msg;
 }
 
 function buildSyncPayload(signoff) {
   const total = ZONES.reduce((s, z) => s + z.tasks.length, 0);
-  const done = ZONES.reduce((s, z) => s + state[z.id].filter(Boolean).length, 0);
+  const done  = ZONES.reduce((s, z) => s + state[z.id].filter(Boolean).length, 0);
   const zones = {};
   ZONES.forEach(z => {
     zones[z.title] = { done: state[z.id].filter(Boolean).length, total: z.tasks.length };
   });
   return {
-    action: 'save',
-    date: getTodayKey(),
-    dayName: getDayName(),
-    totalTasks: total,
+    action:         'save',
+    date:           getTodayKey(),
+    dayName:        getDayName(),
+    totalTasks:     total,
     completedTasks: done,
-    zones: zones,
-    signoff: signoff || ''
+    zones:          zones,
+    signoff:        signoff || ''
   };
 }
 
+// ── KEY CHANGE: use GET + ?action=save&payload=... instead of POST ──
 async function syncToSheets(signoff) {
   if (!SCRIPT_URL) { setSyncStatus('error', 'No Sheet URL'); return; }
   setSyncStatus('syncing', 'Syncing…');
   try {
-    const payload = buildSyncPayload(signoff);
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' }
-    });
-    const data = await res.json();
+    const payload     = buildSyncPayload(signoff);
+    const encoded     = encodeURIComponent(JSON.stringify(payload));
+    const url         = `${SCRIPT_URL}?action=save&payload=${encoded}`;
+    const res         = await fetch(url); // plain GET — no preflight, no CORS block
+    const data        = await res.json();
     if (data.success) {
-      setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})}`);
+      setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`);
     } else {
       setSyncStatus('error', 'Sync failed');
+      console.error('Apps Script error:', data.error);
     }
   } catch (e) {
     setSyncStatus('error', 'Network error');
+    console.error('Sync error:', e);
   }
 }
 
@@ -619,7 +614,8 @@ async function doSignoff() {
   btn.textContent = 'Syncing to Google Sheets…';
   await syncToSheets(name);
   btn.textContent = '✓ Signed off and synced';
-  document.getElementById('signoff-msg').textContent = `Logged as ${name} on ${getTodayKey()} at ${new Date().toLocaleTimeString('en-IN')}`;
+  document.getElementById('signoff-msg').textContent =
+    `Logged as ${name} on ${getTodayKey()} at ${new Date().toLocaleTimeString('en-IN')}`;
 }
 
 // ═══════════════════════════════════════════════
@@ -654,8 +650,6 @@ lastSyncedDate = getTodayKey();
 
 setInterval(updateCountdown, 1000);
 setInterval(updateDateDisplay, 60000);
-
-// Auto-sync every 5 minutes in background
 setInterval(() => syncToSheets(), 5 * 60 * 1000);
 </script>
 </body>
