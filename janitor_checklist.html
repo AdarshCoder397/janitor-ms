@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janitor Checklist — 1604 T-5</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4f1eb;
+    --surface: #ffffff;
+    --surface2: #f9f7f3;
+    --ink: #1a1a18;
+    --ink2: #5a5a54;
+    --ink3: #9a9a90;
+    --accent: #1D9E75;
+    --accent-light: #e1f5ee;
+    --accent-dark: #0f6e56;
+    --red: #c0392b;
+    --red-light: #fce8e8;
+    --amber: #d4860b;
+    --amber-light: #fff3cd;
+    --border: rgba(0,0,0,0.08);
+    --radius: 12px;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Fraunces', serif;
+  }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--ink);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .logo { font-family: var(--serif); font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .sync-status { font-size: 11px; display: flex; align-items: center; gap: 6px; opacity: 0.7; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .sync-dot.syncing { animation: pulse 1s infinite; background: var(--amber); }
+  .sync-dot.error { background: var(--red); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .date-chip { font-size: 11px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; }
+  .reset-countdown { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+  /* ── MAIN LAYOUT ── */
+  .main { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── HEADER CARD ── */
+  .header-card {
+    background: var(--ink);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(29,158,117,0.15);
+  }
+  .header-card h1 { font-family: var(--serif); font-size: 28px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .header-card h1 span { color: var(--accent); }
+  .header-card p { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 6px; }
+  .header-meta { display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .meta-pill {
+    font-size: 11px; padding: 5px 12px;
+    border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.6);
+  }
+  .meta-pill strong { color: #fff; }
+
+  /* ── PROGRESS ── */
+  .progress-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .progress-number { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--accent); line-height: 1; min-width: 80px; }
+  .progress-number span { font-size: 18px; }
+  .progress-info { flex: 1; }
+  .progress-label { font-size: 11px; color: var(--ink3); margin-bottom: 8px; }
+  .progress-bar-wrap { background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+  .progress-sub { font-size: 11px; color: var(--ink3); margin-top: 6px; }
+
+  /* ── ZONES ── */
+  .zone { margin-bottom: 1rem; }
+  .zone-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.85rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .zone-header:hover { background: var(--surface2); }
+  .zone-header.open { border-radius: var(--radius) var(--radius) 0 0; border-bottom-color: transparent; }
+  .zone-icon { font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0; }
+  .zone-title-wrap { flex: 1; }
+  .zone-title { font-size: 13px; font-weight: 500; }
+  .zone-sub { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+  .zone-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+  .zone-badge.done { background: var(--accent-light); color: var(--accent-dark); }
+  .zone-badge.partial { background: var(--amber-light); color: var(--amber); }
+  .zone-badge.empty { background: var(--red-light); color: var(--red); }
+  .zone-arrow { font-size: 12px; color: var(--ink3); transition: transform 0.2s; }
+  .zone-header.open .zone-arrow { transform: rotate(180deg); }
+
+  .task-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden;
+    display: none;
+  }
+  .task-list.visible { display: block; }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 1.25rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-item:hover { background: var(--surface2); }
+  .task-item.checked { background: #f6fdf9; }
+
+  .task-cb {
+    width: 20px; height: 20px; border-radius: 5px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; background: white;
+  }
+  .task-item.checked .task-cb {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .task-item.checked .task-cb::after {
+    content: '';
+    display: block; width: 5px; height: 9px;
+    border: 2px solid white; border-top: none; border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+  }
+  .task-text { font-size: 13px; flex: 1; line-height: 1.5; color: var(--ink); }
+  .task-item.checked .task-text { color: var(--ink3); text-decoration: line-through; }
+  .task-priority {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px;
+    flex-shrink: 0; margin-top: 3px; font-weight: 500;
+  }
+  .p-req { background: var(--red-light); color: var(--red); }
+  .p-imp { background: var(--amber-light); color: var(--amber); }
+
+  /* ── SIGNOFF ── */
+  .signoff-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .signoff-card h3 { font-family: var(--serif); font-size: 16px; font-weight: 600; margin-bottom: 1rem; }
+  .signoff-card input {
+    width: 100%; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-family: var(--mono); font-size: 13px;
+    background: var(--surface2); color: var(--ink);
+    outline: none; transition: border 0.15s;
+  }
+  .signoff-card input:focus { border-color: var(--accent); }
+  .signoff-btn {
+    margin-top: 12px; width: 100%; padding: 12px;
+    background: var(--accent); color: white;
+    border: none; border-radius: 8px;
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .signoff-btn:hover { background: var(--accent-dark); }
+  .signoff-btn:disabled { background: var(--ink3); cursor: not-allowed; }
+  .signoff-msg { font-size: 12px; margin-top: 10px; text-align: center; color: var(--ink3); }
+
+  /* ── SHEETS SETUP NOTICE ── */
+  .setup-banner {
+    background: var(--amber-light);
+    border: 1px solid rgba(212,134,11,0.3);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 12px;
+    color: var(--amber);
+    line-height: 1.7;
+  }
+  .setup-banner strong { display: block; font-size: 13px; margin-bottom: 4px; color: #96600a; }
+  .setup-banner code {
+    background: rgba(212,134,11,0.15);
+    padding: 2px 6px; border-radius: 4px;
+    font-family: var(--mono);
+  }
+  .setup-banner input {
+    width: 100%; margin-top: 10px; padding: 8px 12px;
+    border: 1px solid rgba(212,134,11,0.4); border-radius: 6px;
+    font-family: var(--mono); font-size: 12px; background: white;
+    outline: none;
+  }
+  .setup-banner button {
+    margin-top: 8px; padding: 7px 14px;
+    background: var(--amber); color: white; border: none;
+    border-radius: 6px; font-family: var(--mono);
+    font-size: 12px; cursor: pointer;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px) {
+    .topbar { padding: 0 1rem; }
+    .main { padding: 1rem 1rem 4rem; }
+    .progress-card { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .progress-number { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">Clean<span>Log</span></div>
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">Ready</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="date-chip" id="date-chip">—</div>
+    <div class="reset-countdown" id="countdown">Resets in —</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Setup banner (hidden once URL is saved) -->
+  <div class="setup-banner" id="setup-banner">
+    <strong>⚙ One-time setup — connect to Google Sheets</strong>
+    Paste your Google Apps Script Web App URL below to enable syncing.
+    Deploy the <code>google_apps_script.js</code> file as a Web App (Execute as: Me, Access: Anyone).
+    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" />
+    <button onclick="saveScriptUrl()">Save & connect</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header-card">
+    <h1>Floor Plan <span>1604 T-5</span><br>Janitor Checklist</h1>
+    <p>All tasks are non-negotiable. Complete and sign off before leaving.</p>
+    <div class="header-meta">
+      <div class="meta-pill" id="day-pill">Day: <strong>—</strong></div>
+      <div class="meta-pill">Floor: <strong>1604 T-5</strong></div>
+      <div class="meta-pill">Zones: <strong>6</strong></div>
+      <div class="meta-pill">Tasks: <strong id="total-count">0</strong></div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-card">
+    <div class="progress-number"><span id="pct-num">0</span><span>%</span></div>
+    <div class="progress-info">
+      <div class="progress-label">Today's completion</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="pbar" style="width:0%"></div>
+      </div>
+      <div class="progress-sub" id="prog-sub">0 of 0 tasks completed</div>
+    </div>
+  </div>
+
+  <!-- Zones -->
+  <div id="zones-container"></div>
+
+  <!-- Sign-off -->
+  <div class="signoff-card">
+    <h3>Janitor Sign-off</h3>
+    <input type="text" id="janitor-name" placeholder="Enter your name to sign off…" />
+    <button class="signoff-btn" id="signoff-btn" onclick="doSignoff()">Sign off & sync to Google Sheets</button>
+    <div class="signoff-msg" id="signoff-msg"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const ZONES = [
+  {
+    id: 'doors', title: 'Doors & Entrances', icon: '🚪', color: '#e6f1fb',
+    tasks: [
+      { text: 'Wipe all door handles and push plates with disinfectant', req: true },
+      { text: 'Clean glass panels on all doors — no smudges or fingerprints', req: true },
+      { text: 'Sweep and mop the entrance area floor', req: true },
+      { text: 'Check door closer mechanisms — wipe hinges and frames', req: false },
+      { text: 'Clear any items or shoes left at the entrance', req: true },
+    ]
+  },
+  {
+    id: 'kitchen', title: 'Kitchen', icon: '🍽', color: '#e1f5ee',
+    tasks: [
+      { text: 'Wash and dry all dishes, cups, and cutlery — return to correct storage', req: true },
+      { text: 'Sort dishes: plates on shelf, cups on hooks, cutlery in drawer — no mixing', req: true },
+      { text: 'Wipe down countertops and sink with disinfectant', req: true },
+      { text: 'Clean stovetop / hotplate — remove grease and spills', req: true },
+      { text: 'Empty kitchen trash bin and replace bag', req: true },
+      { text: 'Wipe exterior of microwave, kettle, and appliances', req: false },
+      { text: 'Clean inside sink — no food residue or stains', req: true },
+      { text: 'Mop kitchen floor — pay attention to corners and under shelves', req: false },
+      { text: 'Refill dish soap and hand wash if below half', req: false },
+    ]
+  },
+  {
+    id: 'tables', title: 'Tables & Workspaces', icon: '📋', color: '#faeeda',
+    tasks: [
+      { text: 'Wipe all tabletops with a clean damp cloth — remove crumbs and stains', req: true },
+      { text: 'Clear any leftover food, wrappers, or personal items from tables', req: true },
+      { text: 'Wipe table legs and bases', req: false },
+      { text: 'Ensure no cables are dangling dangerously on or under desks', req: false },
+    ]
+  },
+  {
+    id: 'chairs', title: 'Chairs & Seating', icon: '🪑', color: '#f1efe8',
+    tasks: [
+      { text: 'Push all chairs back into position at their respective tables', req: true },
+      { text: 'Align chairs straight and evenly spaced at each table', req: true },
+      { text: 'Wipe chair seats and backrests — remove dust and stains', req: false },
+      { text: 'Check for broken chairs — tag and report to supervisor immediately', req: true },
+    ]
+  },
+  {
+    id: 'bathrooms', title: 'Bathrooms (B zones)', icon: '🚿', color: '#eeedfe',
+    tasks: [
+      { text: 'Scrub and disinfect all toilet bowls', req: true },
+      { text: 'Wipe toilet seat, lid, and exterior with disinfectant', req: true },
+      { text: 'Clean and disinfect washbasins and taps', req: true },
+      { text: 'Wipe bathroom doors, handles, and light switches', req: true },
+      { text: 'Mop bathroom floors — no puddles or wet spots left', req: true },
+      { text: 'Refill soap dispensers, toilet paper, and paper towels', req: true },
+      { text: 'Empty bathroom trash bins and replace bags', req: true },
+      { text: 'Ensure mirrors are clean — no water spots or smudges', req: false },
+    ]
+  },
+  {
+    id: 'general', title: 'General Sign-off', icon: '✓', color: '#eaf3de',
+    tasks: [
+      { text: 'Sweep and mop all corridor and hallway floors', req: false },
+      { text: 'Empty all general waste bins and replace bags', req: true },
+      { text: 'Wipe light switches throughout the floor', req: false },
+      { text: 'Check that all windows are closed before leaving', req: true },
+      { text: 'Return all cleaning supplies to the storage area neatly', req: false },
+      { text: 'Log signed and submitted', req: true },
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state = {}; // { zoneId: [true/false, ...] }
+let SCRIPT_URL = localStorage.getItem('janitor_script_url') || '';
+let syncTimer = null;
+let lastSyncedDate = '';
+
+function getTodayKey() {
+  const d = new Date();
+  return d.toISOString().split('T')[0]; // YYYY-MM-DD
+}
+
+function getDayName() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+function getStateKey() { return 'janitor_state_' + getTodayKey(); }
+
+function loadState() {
+  const saved = localStorage.getItem(getStateKey());
+  if (saved) {
+    state = JSON.parse(saved);
+  } else {
+    state = {};
+    ZONES.forEach(z => { state[z.id] = z.tasks.map(() => false); });
+  }
+}
+
+function saveState() {
+  localStorage.setItem(getStateKey(), JSON.stringify(state));
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToSheets, 1500);
+}
+
+// ═══════════════════════════════════════════════
+// UI BUILD
+// ═══════════════════════════════════════════════
+function buildUI() {
+  const container = document.getElementById('zones-container');
+  container.innerHTML = '';
+  let totalTasks = 0;
+  ZONES.forEach(zone => {
+    totalTasks += zone.tasks.length;
+    const zoneEl = document.createElement('div');
+    zoneEl.className = 'zone';
+    zoneEl.id = 'zone-' + zone.id;
+
+    const header = document.createElement('div');
+    header.className = 'zone-header';
+    header.innerHTML = `
+      <div class="zone-icon" style="background:${zone.color}">${zone.icon}</div>
+      <div class="zone-title-wrap">
+        <div class="zone-title">${zone.title}</div>
+        <div class="zone-sub" id="zsub-${zone.id}">0 / ${zone.tasks.length} done</div>
+      </div>
+      <span class="zone-badge empty" id="zbadge-${zone.id}">0/${zone.tasks.length}</span>
+      <span class="zone-arrow">▾</span>`;
+    header.onclick = () => toggleZone(zone.id);
+
+    const taskList = document.createElement('div');
+    taskList.className = 'task-list';
+    taskList.id = 'tasks-' + zone.id;
+
+    zone.tasks.forEach((task, i) => {
+      const item = document.createElement('div');
+      item.className = 'task-item';
+      item.id = `ti-${zone.id}-${i}`;
+      item.innerHTML = `
+        <div class="task-cb" id="cb-${zone.id}-${i}"></div>
+        <span class="task-text">${task.text}</span>
+        <span class="task-priority ${task.req ? 'p-req' : 'p-imp'}">${task.req ? 'Required' : 'Important'}</span>`;
+      item.onclick = () => toggleTask(zone.id, i);
+      taskList.appendChild(item);
+    });
+
+    zoneEl.appendChild(header);
+    zoneEl.appendChild(taskList);
+    container.appendChild(zoneEl);
+  });
+  document.getElementById('total-count').textContent = totalTasks;
+  applyState();
+}
+
+function toggleZone(id) {
+  const header = document.querySelector(`#zone-${id} .zone-header`);
+  const list = document.getElementById('tasks-' + id);
+  header.classList.toggle('open');
+  list.classList.toggle('visible');
+}
+
+function toggleTask(zoneId, idx) {
+  state[zoneId][idx] = !state[zoneId][idx];
+  applyTask(zoneId, idx);
+  updateZoneBadge(zoneId);
+  updateProgress();
+  saveState();
+}
+
+function applyTask(zoneId, idx) {
+  const item = document.getElementById(`ti-${zoneId}-${idx}`);
+  if (!item) return;
+  if (state[zoneId][idx]) item.classList.add('checked');
+  else item.classList.remove('checked');
+}
+
+function applyState() {
+  ZONES.forEach(zone => {
+    zone.tasks.forEach((_, i) => applyTask(zone.id, i));
+    updateZoneBadge(zone.id);
+  });
+  updateProgress();
+}
+
+function updateZoneBadge(zoneId) {
+  const zone = ZONES.find(z => z.id === zoneId);
+  const done = state[zoneId].filter(Boolean).length;
+  const total = zone.tasks.length;
+  const badge = document.getElementById('zbadge-' + zoneId);
+  const sub = document.getElementById('zsub-' + zoneId);
+  badge.textContent = `${done}/${total}`;
+  sub.textContent = `${done} / ${total} done`;
+  badge.className = 'zone-badge';
+  if (done === total) badge.classList.add('done');
+  else if (done > 0) badge.classList.add('partial');
+  else badge.classList.add('empty');
+}
+
+function updateProgress() {
+  const total = ZONES.reduce((s, z) => s + z.tasks.length, 0);
+  const done = ZONES.reduce((s, z) => s + state[z.id].filter(Boolean).length, 0);
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('pct-num').textContent = pct;
+  document.getElementById('pbar').style.width = pct + '%';
+  document.getElementById('prog-sub').textContent = `${done} of ${total} tasks completed`;
+}
+
+// ═══════════════════════════════════════════════
+// DATE & COUNTDOWN
+// ═══════════════════════════════════════════════
+function updateDateDisplay() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  document.getElementById('date-chip').textContent = dateStr;
+  document.getElementById('day-pill').innerHTML = `Day: <strong>${getDayName()}</strong>`;
+}
+
+function updateCountdown() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diff = midnight - now;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('countdown').textContent =
+    `Resets in ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  // Check if date changed → reset
+  const today = getTodayKey();
+  if (lastSyncedDate && lastSyncedDate !== today) {
+    location.reload();
+  }
+  lastSyncedDate = today;
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ═══════════════════════════════════════════════
+function setSyncStatus(status, msg) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  dot.className = 'sync-dot';
+  if (status === 'syncing') dot.classList.add('syncing');
+  if (status === 'error') dot.classList.add('error');
+  txt.textContent = msg;
+}
+
+function buildSyncPayload(signoff) {
+  const total = ZONES.reduce((s, z) => s + z.tasks.length, 0);
+  const done = ZONES.reduce((s, z) => s + state[z.id].filter(Boolean).length, 0);
+  const zones = {};
+  ZONES.forEach(z => {
+    zones[z.title] = { done: state[z.id].filter(Boolean).length, total: z.tasks.length };
+  });
+  return {
+    action: 'save',
+    date: getTodayKey(),
+    dayName: getDayName(),
+    totalTasks: total,
+    completedTasks: done,
+    zones: zones,
+    signoff: signoff || ''
+  };
+}
+
+async function syncToSheets(signoff) {
+  if (!SCRIPT_URL) { setSyncStatus('error', 'No Sheet URL'); return; }
+  setSyncStatus('syncing', 'Syncing…');
+  try {
+    const payload = buildSyncPayload(signoff);
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) {
+      setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})}`);
+    } else {
+      setSyncStatus('error', 'Sync failed');
+    }
+  } catch (e) {
+    setSyncStatus('error', 'Network error');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SIGNOFF
+// ═══════════════════════════════════════════════
+async function doSignoff() {
+  const name = document.getElementById('janitor-name').value.trim();
+  if (!name) { document.getElementById('signoff-msg').textContent = 'Please enter your name first.'; return; }
+  const btn = document.getElementById('signoff-btn');
+  btn.disabled = true;
+  btn.textContent = 'Syncing to Google Sheets…';
+  await syncToSheets(name);
+  btn.textContent = '✓ Signed off and synced';
+  document.getElementById('signoff-msg').textContent = `Logged as ${name} on ${getTodayKey()} at ${new Date().toLocaleTimeString('en-IN')}`;
+}
+
+// ═══════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════
+function saveScriptUrl() {
+  const url = document.getElementById('script-url-input').value.trim();
+  if (!url || !url.startsWith('https://')) { alert('Please enter a valid URL starting with https://'); return; }
+  SCRIPT_URL = url;
+  localStorage.setItem('janitor_script_url', url);
+  document.getElementById('setup-banner').style.display = 'none';
+  setSyncStatus('ok', 'Connected');
+  syncToSheets();
+}
+
+function checkSetupBanner() {
+  if (SCRIPT_URL) {
+    document.getElementById('setup-banner').style.display = 'none';
+    setSyncStatus('ok', 'Connected');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+loadState();
+buildUI();
+updateDateDisplay();
+updateCountdown();
+checkSetupBanner();
+lastSyncedDate = getTodayKey();
+
+setInterval(updateCountdown, 1000);
+setInterval(updateDateDisplay, 60000);
+
+// Auto-sync every 5 minutes in background
+setInterval(() => syncToSheets(), 5 * 60 * 1000);
+</script>
+</body>
+</html>
