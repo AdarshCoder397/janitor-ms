@@ -323,70 +323,64 @@
 // DATA
 // ═══════════════════════════════════════════════
 const ZONES = [
-  {
-    id: 'doors', title: 'Doors & Entrances', icon: '🚪', color: '#e6f1fb',
+  { id: 'doors', title: 'Darwaze aur Entrances', icon: '🚪', color: '#e6f1fb',
     tasks: [
-      { text: 'Wipe all door handles and push plates with disinfectant', req: true },
-      { text: 'Clean glass panels on all doors — no smudges or fingerprints', req: true },
-      { text: 'Sweep and mop the entrance area floor', req: true },
-      { text: 'Check door closer mechanisms — wipe hinges and frames', req: false },
-      { text: 'Clear any items or shoes left at the entrance', req: true },
+      { text: 'Sabhi darwaze ke handle aur push plate ko disinfectant se saaf karo', req: true },
+      { text: 'Sabhi darwazo ke glass panels saaf karo — koi smudge ya ungli ke nishan nahi chahiye', req: true },
+      { text: 'Entrance area ka floor jhado aur pocha lagao', req: true },
+      { text: 'Door closer mechanism check karo — hinge aur frame pocho', req: false },
+      { text: 'Entrance pe rakhi koi bhi cheez ya chappal hata do', req: true },
     ]
   },
-  {
-    id: 'kitchen', title: 'Kitchen', icon: '🍽', color: '#e1f5ee',
+  { id: 'kitchen', title: 'Kitchen', icon: '🍽', color: '#e1f5ee',
     tasks: [
-      { text: 'Wash and dry all dishes, cups, and cutlery — return to correct storage', req: true },
-      { text: 'Sort dishes: plates on shelf, cups on hooks, cutlery in drawer — no mixing', req: true },
-      { text: 'Wipe down countertops and sink with disinfectant', req: true },
-      { text: 'Clean stovetop / hotplate — remove grease and spills', req: true },
-      { text: 'Empty kitchen trash bin and replace bag', req: true },
-      { text: 'Wipe exterior of microwave, kettle, and appliances', req: false },
-      { text: 'Clean inside sink — no food residue or stains', req: true },
-      { text: 'Mop kitchen floor — pay attention to corners and under shelves', req: false },
-      { text: 'Refill dish soap and hand wash if below half', req: false },
+      { text: 'Sabhi bartan, cup, aur chamche dhoye aur sukhao — sahi jagah rakh do', req: true },
+      { text: 'Bartan sort karo: plate shelf pe, cup hooks pe, chamche drawer mein — mixing nahi honi chahiye', req: true },
+      { text: 'Countertop aur sink ko disinfectant se pocho', req: true },
+      { text: 'Stovetop / hotplate saaf karo — grease aur gilandar saaf karo', req: true },
+      { text: 'Kitchen ka kuda dabbe ka bag badlo aur dabbe ko khali karo', req: true },
+      { text: 'Microwave, kettle, aur appliances ka bahar se saaf karo', req: false },
+      { text: 'Sink ke andar saaf karo — khaane ka koi nishan ya daag nahi chahiye', req: true },
+      { text: 'Kitchen floor ka pocha lagao — corners aur shelves ke neeche dhyan do', req: false },
+      { text: 'Dish soap aur hand wash adhe se kam ho toh refill karo', req: false },
     ]
   },
-  {
-    id: 'tables', title: 'Tables & Workspaces', icon: '📋', color: '#faeeda',
+  { id: 'tables', title: 'Table aur Workspace', icon: '📋', color: '#faeeda',
     tasks: [
-      { text: 'Wipe all tabletops with a clean damp cloth — remove crumbs and stains', req: true },
-      { text: 'Clear any leftover food, wrappers, or personal items from tables', req: true },
-      { text: 'Wipe table legs and bases', req: false },
-      { text: 'Ensure no cables are dangling dangerously on or under desks', req: false },
+      { text: 'Sabhi tabletop ko geele kaprde se pocho — crumbs aur daag hata do', req: true },
+      { text: 'Table se khaana, wrapper, ya personal cheezein hata do', req: true },
+      { text: 'Table ke paer aur base pocho', req: false },
+      { text: 'Dekho koi cable desk ke upar ya neeche khatra na ban rahi ho', req: false },
     ]
   },
-  {
-    id: 'chairs', title: 'Chairs & Seating', icon: '🪑', color: '#f1efe8',
+  { id: 'chairs', title: 'Kursi aur Seating', icon: '🪑', color: '#f1efe8',
     tasks: [
-      { text: 'Push all chairs back into position at their respective tables', req: true },
-      { text: 'Align chairs straight and evenly spaced at each table', req: true },
-      { text: 'Wipe chair seats and backrests — remove dust and stains', req: false },
-      { text: 'Check for broken chairs — tag and report to supervisor immediately', req: true },
+      { text: 'Sabhi kursiyo ko unke table ke paas wapas rakh do', req: true },
+      { text: 'Kursiyo ko seedha aur barabar duriya pe align karo', req: true },
+      { text: 'Kursi ki seat aur backrest pocho — dhool aur daag hata do', req: false },
+      { text: 'Tooti kursi check karo — tag lagao aur supervisor ko turant batao', req: true },
     ]
   },
-  {
-    id: 'bathrooms', title: 'Bathrooms (B zones)', icon: '🚿', color: '#eeedfe',
+  { id: 'bathrooms', title: 'Bathrooms (B Zones)', icon: '🚿', color: '#eeedfe',
     tasks: [
-      { text: 'Scrub and disinfect all toilet bowls', req: true },
-      { text: 'Wipe toilet seat, lid, and exterior with disinfectant', req: true },
-      { text: 'Clean and disinfect washbasins and taps', req: true },
-      { text: 'Wipe bathroom doors, handles, and light switches', req: true },
-      { text: 'Mop bathroom floors — no puddles or wet spots left', req: true },
-      { text: 'Refill soap dispensers, toilet paper, and paper towels', req: true },
-      { text: 'Empty bathroom trash bins and replace bags', req: true },
-      { text: 'Ensure mirrors are clean — no water spots or smudges', req: false },
+      { text: 'Sabhi toilet bowls ko scrub karo aur disinfect karo', req: true },
+      { text: 'Toilet seat, dhakkan, aur bahari hissa disinfectant se pocho', req: true },
+      { text: 'Washbasin aur naal saaf aur disinfect karo', req: true },
+      { text: 'Bathroom ke darwaze, handle, aur light switch pocho', req: true },
+      { text: 'Bathroom floor ka pocha lagao — koi paani ka dhabbha nahi rehna chahiye', req: true },
+      { text: 'Soap dispenser, toilet paper, aur paper towel refill karo', req: true },
+      { text: 'Bathroom ke kude ke dabbe khali karo aur bag badlo', req: true },
+      { text: 'Sheeshaa saaf karo — paani ke nishan ya smudge nahi chahiye', req: false },
     ]
   },
-  {
-    id: 'general', title: 'General Sign-off', icon: '✓', color: '#eaf3de',
+  { id: 'general', title: 'General Sign-off', icon: '✓', color: '#eaf3de',
     tasks: [
-      { text: 'Sweep and mop all corridor and hallway floors', req: false },
-      { text: 'Empty all general waste bins and replace bags', req: true },
-      { text: 'Wipe light switches throughout the floor', req: false },
-      { text: 'Check that all windows are closed before leaving', req: true },
-      { text: 'Return all cleaning supplies to the storage area neatly', req: false },
-      { text: 'Log signed and submitted', req: true },
+      { text: 'Sabhi corridor aur hallway floors jhado aur pocha lagao', req: false },
+      { text: 'Sabhi general kude ke dabbe khali karo aur bag badlo', req: true },
+      { text: 'Poore floor mein light switches pocho', req: false },
+      { text: 'Jaane se pehle check karo ki sabhi khidkiyan band hain', req: true },
+      { text: 'Sabhi safai ka saamaan storage area mein seedha rakh do', req: false },
+      { text: 'Log sign karke jama karo', req: true },
     ]
   }
 ];
